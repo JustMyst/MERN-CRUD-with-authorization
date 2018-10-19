@@ -23,7 +23,7 @@ class Show extends Component {
             uri: 'http://api.openweathermap.org/data/2.5/weather?q='+res.data.miasto+"&appid="+this.state.apiKey,
             json: true
         }
-        rp(options)
+        rp(options) // sending request promise to weather API to obtain informations about weather.
         .then((body)=>{
             let lat = body.coord.lat;
             let lon = body.coord.lon;
@@ -31,9 +31,9 @@ class Show extends Component {
             weather.temp=body.main.temp;
             console.log(body.weather[0].description);
             console.log(body)
-            let cityTimeZone =tzlookup(lat, lon);
+            let cityTimeZone =tzlookup(lat, lon); // check time zone with tzlookup
             res.data.timeZone = new Date().toLocaleTimeString(undefined,{timeZone:cityTimeZone});
-          }).catch((error)=>{
+          }).catch((error)=>{ // handle bad cities
             console.log(error);
             res.data.timeZone="Can't find";
             weather.type="Nope";
@@ -74,7 +74,7 @@ class Show extends Component {
                 </div>
                 <div className="panel-body col-sm-6">
                     <dl>
-                        <dt>Pogoda dla {this.state.kontrahent.miasto}:</dt>
+                        <dt>Pogoda dla {this.state.kontrahent.miasto}:</dt> 
                         <dd>{weather.type}</dd>
                         <dd>{Math.floor(weather.temp - 273)} C</dd>
                         <dt>Aktualny czas: {this.state.kontrahent.timeZone}</dt>

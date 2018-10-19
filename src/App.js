@@ -11,7 +11,7 @@ var tzlookup = require("tz-lookup");
 
 class App extends Component {
 
-  constructor(props) {
+  constructor(props) { 
     super(props);
     this.state = {
       kontrahenci: [],
@@ -25,19 +25,19 @@ class App extends Component {
     this.sortBy = this.sortBy.bind(this);
     
   }
-
+// searchbar input
   handleInputChange = () => {
     this.setState({
       query: this.search.value
     })
   }
-
+// clicking on pages 
   handleClick(event) {
     this.setState({
       currentPage: Number(event.target.id)
     });
   }
-  
+  // change sorting key
   sortBy(e){
     this.setState({key:e.target.id });
   }
@@ -46,7 +46,7 @@ class App extends Component {
   localStorage.removeItem('jwtToken');
   window.location.reload();
   }
-  
+  // part of sorting function - to sort array of objects by one of value
   compareValues = ( key, order='asc') => {
     return function(a, b) {
       if(!a.hasOwnProperty(key) || !b.hasOwnProperty(key)) {
@@ -72,23 +72,23 @@ class App extends Component {
   }
 
   componentWillMount() {
-    axios.defaults.headers.common['Authorization'] = localStorage.getItem('jwtToken');
-    axios.get('/api/kontrahent')
+    axios.defaults.headers.common['Authorization'] = localStorage.getItem('jwtToken'); // checking if someone has jwt Token
+    axios.get('/api/kontrahent')  // getting list of kontrahents from DB
       .then(res => {
         console.log(res.data);
 
-        res.data.map((kontrahent)=>{
+        res.data.map((kontrahent)=>{      // for each kontrahent, check his location to get his TimeZone and show exact time.
           let options = {
             uri: 'http://api.openweathermap.org/data/2.5/weather?q='+kontrahent.miasto+"&appid="+this.state.apiKey,
             json: true
           }
-          rp(options)
+          rp(options)               // Request promise asynchronusly to weather API 
             .then((body)=>{
             
             let lat = body.coord.lat;
             let lon = body.coord.lon;
-            let cityTimeZone =tzlookup(lat, lon);
-            kontrahent.timeZone = new Date().toLocaleTimeString(undefined,{timeZone:cityTimeZone});
+            let cityTimeZone =tzlookup(lat, lon);     // use tzlookup to get someone's TimeZone
+            kontrahent.timeZone = new Date().toLocaleTimeString(undefined,{timeZone:cityTimeZone}); // check actual time for TimeZone
           }).catch((error)=>{
             kontrahent.timeZone="Can't find";
           }).then(()=>{this.setState({ kontrahenci: res.data });})
@@ -96,7 +96,7 @@ class App extends Component {
           
         })
       })
-      .catch((error) => {
+      .catch((error) => {                 // catch error 401 - unauthorized and send him to login page
         if(error.response.status === 401) {
           this.props.history.push("/login");
         }
@@ -109,18 +109,18 @@ class App extends Component {
 
     const { kontrahenci, currentPage, kontrahentsPerPage } = this.state;
 
-        const unsortedKontrahenci = kontrahenci.filter((kontrahent=> kontrahent.imie.startsWith(this.state.query)
+        const unsortedKontrahenci = kontrahenci.filter((kontrahent=> kontrahent.imie.startsWith(this.state.query) // searching for kontrahents that meet requirements
         || kontrahent.nazwisko.startsWith(this.state.query)
         || kontrahent.miasto.startsWith(this.state.query)))
 
-        let sortedKontrahenci = unsortedKontrahenci.sort(this.compareValues(this.state.key));
+        let sortedKontrahenci = unsortedKontrahenci.sort(this.compareValues(this.state.key));   // sorting kontrahents by a key - imie, nazwisko or miasto
 
-        // Logic for displaying current kontrahenci
+        // Logic for displaying proper number of kontrahents per page
         const indexOfLast = currentPage * kontrahentsPerPage;
         const indexOfFirst = indexOfLast - kontrahentsPerPage;
         const currentKontrahenci = sortedKontrahenci.slice(indexOfFirst, indexOfLast);
 
-        const renderKontrahenci = currentKontrahenci.map((kontrahent) => {
+        const renderKontrahenci = currentKontrahenci.map((kontrahent) => { // creating list of kontrahents
           return (
               <tr>
                 <td><Link to={`/show/${kontrahent._id}`}>{kontrahent.imie}</Link></td>
@@ -150,27 +150,27 @@ class App extends Component {
           );
         });
 
-    return (
+    return ( // the true rendering
       <div class="container">
         <div class="panel panel-default">
           <div class="panel-heading">
             <h3>
               Kontrahenci &nbsp;
               {localStorage.getItem('jwtToken') &&
-                <button class="btn btn-primary" onClick={this.logout}>Wyloguj</button>
+                <button class="btn btn-primary" onClick={this.logout}>Wyloguj</button> //logout button
               }
             </h3>
             <form>
             <input
               placeholder="Search for..."
-              ref={input => this.search = input}
+              ref={input => this.search = input} // search input
               onChange={this.handleInputChange}
             />
            </form>    
           </div>
           <div class="panel-body">
-          <h4><Link to="/create"><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Dodaj</Link></h4>
-            <table class="table table-stripe">
+          <h4><Link to="/create"><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Dodaj</Link></h4> 
+            <table class="table table-stripe"> 
               <thead>
                 <tr>
                   <th>Imię <button type="button" id="imie"  onClick={ this.sortBy } class="btn btn-primary btn-sm">A-Z</button> </th>
